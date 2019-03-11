@@ -7,6 +7,7 @@ This project aims at making a simple compiler to translate a simple language tha
 
 ## Requirement
 Compiler support C++17 standard as well as C++17 standard library.
+There exists some standard library dependency when the target file is generated, to write a ".tsl" file, include the file of "extern/files/TargetDependence.h" to ensure those dependency.
 
 ## Usage
 #### Simple Usage: <br />
@@ -26,3 +27,5 @@ There must be a source path that ended with ".tsl", if not specified, \<target p
 -property_list_for_auto_generate<br />
 -ignore_batch_for_anonym<br />
 -show_all_collisions
+
+
