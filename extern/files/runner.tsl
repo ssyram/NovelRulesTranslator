@@ -1,0 +1,103 @@
+// this file is used to translate into runner.cpp
+
+#include "TargetDependence.h"
+#include <unordered_map>
+#include <string>
+#include <optional>
+using std::optional;
+using std::unordered_map;
+using std::string;
+
+unordered_map<string, size_t> t_map = {
+    { "-no_parse_range_warn", 2 },
+    { "-restrict_nonformat_terminate", 3 },
+    { "-ignore_duplicate_production", 4 },
+    { "-ignore_anonym_for_cr", 5 },
+    { "-property_list_for_auto_generate", 6 },
+    { "-ignore_batch_for_anonym", 7 },
+    { "-show_all_collisions", 8 },
+    { "-o", 9 },
+    { "-l", 10 },
+    { "thread", 11 }
+};
+
+struct CommandParseObject {
+    bool
+        no_parse_range_warn = false,
+        restrict_nonformat_terminate = false,
+        ignore_duplicate_production = false,
+        ignore_anonym_for_cr = false,
+        property_list_for_auto_generate = false,
+        ignore_batch_for_anonym = false,
+        show_all_collisions = false;
+    string tsl_file_path;
+    optional<string> target_file_path, log_path;
+    optional<size_t> thread_amount;
+};
+
+CommandParseObject cpo;
+
+using CommandParseException = string;
+
+#define check_reset(name) if (info.name) throw CommandParseException("Reset for name");
+
+namespace runner {
+    ```tsl
+    terminate = {
+        // all of the option names
+        'path', 'int', '-no_parse_range_warn',
+        '-restrict_nonformat_terminate',
+        '-ignore_duplicate_production',
+        '-ignore_anonym_for_cr',
+        '-property_list_for_auto_generate',
+        '-ignore_batch_for_anonym',
+        '-show_all_collisions',
+        '-o', '-l', '-thread'
+    }
+    token_type = string;
+    get_type = {
+        for (auto c: token)
+            if (unsigned(c - '0') >= 10) goto ret;
+        return 1;
+    ret:
+        const auto it = t_map.find(token);
+        if (it != t_map.end()) return it->second;
+        return 0;
+    }
+    pass_info_struct = CommandParseObject;
+
+
+    analysis_program -> ana_item*;
+    ana_item := 'path', {
+                    if (!info.tsl_file_path.empty())
+                        if (info.target_file_path)
+                            throw CommandParseException("Reset for target file path");
+                        else info.target_file_path = $1;
+                    else info.tsl_file_path = $1;
+                }
+              | '-o' 'path', {
+                    if (info.target_file_path)
+                        throw CommandParseException("Reset for target file path");
+                    info.target_file_path = $2;
+              }
+              | '-l' 'path', {
+                  check_reset(log_path)
+                  info.log_path = $2;
+              }
+              | '-thread' 'int', {
+                if (info.thread_amount)
+                    throw CommandParseException("Reset for thread_amount");
+                auto &ts = *info.thread_amount;
+                ts = 0;
+                for (auto c: $2)
+                    ts = ts * 10 + c - '0';
+              }
+              | '-no_parse_range_warn', { check_reset(no_parse_range_warn) info.no_parse_range_warn = true;}
+              | '-restrict_nonformat_terminate', { check_reset(restrict_nonformat_terminate) info.restrict_nonformat_terminate = true;}
+              | '-ignore_duplicate_production', { check_reset(ignore_duplicate_production) info.ignore_duplicate_production = true;}
+              | '-ignore_anonym_for_cr', { check_reset(ignore_anonym_for_cr) info.ignore_anonym_for_cr = true;}
+              | '-property_list_for_auto_generate', { check_reset(property_list_for_auto_generate) info.property_list_for_auto_generate = true;}
+              | '-ignore_batch_for_anonym', { check_reset(ignore_batch_for_anonym) info.ignore_batch_for_anonym = true;}
+              | '-show_all_collisions', { check_reset(show_all_collisions) info.show_all_collisions = true;}
+    ```
+}

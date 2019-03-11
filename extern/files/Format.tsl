@@ -1,0 +1,165 @@
+//
+//  Format.tsl
+//  NovelRulesTranslator
+//
+//  Created by 潇湘夜雨 on 2019/2/16.
+//  Copyright © 2019 ssyram. All rights reserved.
+//
+
+#ifndef Format_tsl_h
+#define Format_tsl_h
+
+// this file show what a tsl file looks like.
+// but this file itself just specify the format and cannot be run
+
+// Firstly, a part of C++ code.
+// the functions or classes that are going to be used in the "tsl block"
+// must be declared here
+#include <iostream>
+using std::cout;
+using std::endl;
+
+// it is recommended that the "tsl block" put into a namespace to prevent naming polution
+namespace sample {
+    /**
+     * inside this block
+     * all "strong keywords" are wrapped by "'", while "weak keywords" are wrapped by '"'
+     * something must exist are wrapped by {}, while ones that is optional are inside []
+     * semantic descriptions are all in <>
+     * the '*' symbol appears right after {} or [] means the content can appear for infinite times
+     */
+    ```tsl // here starts the "tsl block"
+    /**
+     * the "tsl block" is divided into 3 parts:
+     * 1. the fixed sequence binding part
+     * 2. the non-terminate symbol type binding part (optional)
+     * 3. the content part, which can in fact be considered as a "block"
+     */
+    
+    /* All C++ names do not allow ';' inside its expression. */
+    
+    /* inside the "tsl block", both kinds of type of comment are supported */
+    // First of all, the fixed format(it is not allowed to change the sequence of them
+    // or to add something inside them except for comment)
+    // terminate is a weak keyword in "tsl block"
+    // all kinds of symbols without the surrounding of '' or "" are reserved words(strong keywords)
+    "terminate" '=' '{' // here allows comment(unlike before)
+        /* all kinds of symbols are allowed here, but except for the normal identifiers you must
+         put them inside of '' or "" */
+        // of course, they can be put into '' or "" and it's recommended to do that
+        // some examples: "+", '-', "mul", 'div', num /* here shows all kinds of them */
+    '}' [';'] // ; can be ignored
+    
+    // the target of the translator is to check if the stream of tokens is of impeccable form of specified syntax
+    // this statement is to specify what kind of C++ type will be put as the basic token of the translator
+    // the following statement means that C++ type "char" is the type of token
+    // token_type is also a weak keyword
+    "token_type" '=' <a C++ class name> ';' /* format: token_type = <a C++ typename>; */ // ; cannot be ignored
+    
+    // a token must be mapped into a kind of terminate word which is specified above
+    // this statement is to specify the function to translate the relationship between tokens and terminate words
+    // essentially, terminate words are integers counting from 0
+    // like above, "+" is 0, '-' is 1, "mul" is 2, and so on
+    // get_type is also a weak keyword
+    "get_type" '=' { <a C++ function name> ';' | '{' <a C++ block> '}' [';'] }
+    /* format: get_type = <a C++ function name> */
+    // The auto filled: size_t get_type(const token_type &token) { ... }
+    /* the type of the needed C++ function:  */
+    /* size_t (*get_type)(const token_type &); */
+
+    // the pass infomation that belongs to the parse process
+    // although "pass_info_struct" is not a strong keyword
+    // please don't make it the start nonterminate symbol
+    // or error should occur
+    ["pass_info_struct" '=' { '{' <a C++ struct definition block> '}' [';'] | <a C++ class name> ';' }]
+    
+    /* here starts the binding part and it's optional */
+    // by default, non-terminate types are binding to "default_object_type", which is an empty class
+    ['using' <non-terminate type name> '=' <a C++ class name>';']*
+    
+    /* here starts the block part, from here on, you can assume this is a "lambda" "block" */
+    // the name of this block is <empty>
+    ['properties' '=' <a property list> ';']
+    // front will be executed before semantic process
+    /* format: void (*front)(ll left_type, vector<symbol_type> &right, pass_info &info); */
+    ['front' '=' { '{' <an implementation of a C++ function, here is C++ code> '}' [';'] | <a C++ function name> ';' }]
+    // back will be executed after semantic process
+    /* format: void (*back)(symbol_type &left, vector<symbol_type> &right, pass_info &info); */
+    ['back' '=' { '{' <an implementation of a C++ function> '}' [';'] | <a C++ function name> ';' }]
+    
+    // inside block content part, there are several types of statements that can be written in any sequence
+    // 1. the statement of normal production or auto-combine production
+    { [<name> ':'] { <left symbol> | '|' } <':=' | '::=' | '->'> <right symbol sequence (can be empty), or auto-combined ones>
+        [',' <property list>]
+        [[','] <the first type of semantic process> | '=' <the second type of semantic process>] [';']
+        // rules:
+        // 1. '|' as replacement means it has the same left symbol as the just-before production
+        // 2. if the next production is not begin with '|' or has name and there is no semantic process,
+        //    there must be ';' right after this production
+        // 3. auto-combined production means there exist [] or {} blocks inside the right symbol sequence
+        //    in this case, RulesTranslator will automatically find all combinations
+        //    only the second type "= <the second type of semantic process>" is acceptable as semantic process
+        // 4. semantic processes:
+        //    1st type means that user can access symbols by $$ or ${n} and std::visit is called automatically
+        //    2nd type means that user will only get (symbol_type &left, vector<symbol_type> &right) as input
+        //    and must call std::visit by themselves. // it is exactly the function type of <back> function
+        //    if the specified semantic process is a name, then must has ';'
+        // 5. contemporarily, name can only be used to resolve conflict specifically
+        // 6. star(*) resolving rules:
+        //    1. '*' must cling to the target, no dividers or comment are allowed
+        //    2. if two words are cling to '*', like "a*b", '*' is the postfix of "a".
+    }*
+    // 2. the property declarations:
+    // 2.1. binding properties:
+    [ { 'left' | 'right' } <name of a binding property> ';' ]*
+    // 2.2. priority property:
+    // stable means not to auto increase the newly appended production
+    // default is auto increase
+    // pay attention that blocks are considered as a whole
+    // so if specified in block property, the property will ^automatically appear as stable^
+    [ 'rank' ['stable'] <name of a priority property> ';' ]*
+    // 2.3. just combine the two: // that is: 'rank' and 'left' / 'right' can appear in any order.
+    [ { { 'rank' ['stable'] [<a name>] { 'left' | 'right' } <a name> } |
+        { { 'left' | 'right' } [<a name>] 'rank' ['stable'] <a name> } ';' } ]*
+    // 3. blocks:
+    // the following means that: "left rank" or "rank left" means the same
+    // the first <a name> only owns the first property, while the second owns two of the properties.
+    // the <block name> will be the name of a block, it, like the name of production, can only be used in
+    // pointing-out conflict resolvation.
+    [ [<block name> ':'] [ { 'rank' [ 'stable' | 'autoincrease' ] [<a name>] [ 'left' | 'right' ] } |
+                           { { 'left' | 'right' } [<a name>] ['rank' ['stable'] ] } ] [<a name>] '{'
+            // the sequence must not be changed if they exist
+            ['properties' '=' <a property list>';']
+            // this function will be called before semantic process but after the <front> function of upper block(s).
+            ['front' '=' '{' <an implementation of a C++ function, here is C++ code> '}' ';']
+            // this function will be called after semantic process but before the <back> function of upper block(s).
+            ['back' '=' '{' <an implementation of a C++ function> '}' ';']
+            // the 3 types of inside-block statements
+        '}' ';' // ';' can be ignored.
+    ]*
+    // 4. point out one specific conflict resolve way.
+    // if the name is of block or auto-combine productions, it will apply to all of them
+    // user can specify a range of them by specifying id list
+    // or they can just specify a name that has a range of ids
+    [ 'point'
+        { { <front id1> [ '-' <back id1> ] | <name1> } ','
+        { "shift" | "reduce" } ','
+        { { <front id2> [ '-' <back id2> ] } | <name2> } ','
+        { "shift" | "reduce" } ';'
+    ]*
+    
+    // rules about <property list>:
+    // 1. element types: // all of them are optional
+    //    <right inside a 'rank' block, a number to specify ranking (auto increase by the last specified one)>,
+    //    { <a rank property name> [<a number to specify the ranking>] },
+    //    { 'left' | 'right' } // to specify how to interpret ^this specific production^
+    //    <a binding property name>
+    //    { 'nofront', 'noback' } // to shadow the execution of front or back from environment
+    // 2. rules:
+    // 2.1. the interpret priority of the first element is lower than the second one
+    // 2.2. the third element cannot be used in block property
+    
+    ```
+}
+
+#endif /* Format_tsl_h */

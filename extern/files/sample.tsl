@@ -1,0 +1,150 @@
+#include <iostream>
+#include <variant>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <deque>
+#include <stack>
+
+using std::stack;
+using std::deque;
+using std::vector;
+using std::ostream;
+
+
+namespace sample {
+    ostream &print_symbol(const long long s);
+    ```tsl
+    terminate = { '+', "-", "*", '/', '.', num, '(', ')' };
+    token_type = char;
+    get_type = {
+        switch (token) {
+            case '+':
+                return $'+';
+            case '-':
+                return $'-';
+            case '*':
+                return $'*';
+            case '/':
+                return $'/';
+            case '.':
+                return $'.';
+            case '(':
+                return $'(';
+            case ')':
+                return $')';
+            default:
+                break;
+        }
+        if (unsigned(token - '0') <= 10)
+            return $'num';
+        throw "";
+    }
+    pass_info_struct = {
+        bool has_value = false;
+        double r;
+    };
+
+    using n = double;
+    using k = unsigned long;
+
+    front = message;
+
+    back = {
+        cout << "REDUCE: ";
+        print_symbol(left.type) << ":= ";
+        for (auto &s: right)
+            print_symbol(s.type);
+        cout << endl << endl;
+    };
+
+    p := [n], = {
+        if (right.size()) {
+            info.has_value = true;
+            info.r = std::get<double>(right[0].object);
+        }
+    }
+
+    left rank {
+        properties = noback;
+        front = {
+            cout << "MAIN REDUCE: ";
+            for (auto &s: right)
+                print_symbol(s.type);
+        }
+        plus: n := n { '+' | '-' } n, 1, = op;
+                 | n { '*' | '/' } n, 2, = op;
+    }
+
+    n := '(' n ')', { $$ = $2; }
+    // symbol_type: type, object
+       | ['+'* | '-'*] k ['.' k], = {
+          auto &l = std::get<double>(left.object);
+          uint8_t start_pos = 0;
+          bool minus = false;
+          if (right[0].object.index() == object_type{iter_object_type{}}.index()) {
+              start_pos = 1;
+              auto &data = std::get<iter_object_type>(right[0].object).data;
+              minus = std::get<char>(data[0].object) == '-' && data.size() % 2;
+          }
+          if (right.size() == start_pos + 1)
+              l = std::get<unsigned long>(right[start_pos].object);
+          else {
+              auto k = std::get<unsigned long>(right[start_pos + 2].object);
+              for (l = k; k; k /= 10) l /= 10;
+              l += std::get<unsigned long>(right[start_pos].object);
+          }
+          if (minus) l = -l;
+       }
+    k := k num, { $$ = $1 * 10 + ($2 - '0'); }
+       | num, { $$ = $1 - '0'; };
+    ```
+    void message(const ll left_type, vector<symbol_type> &right, pass_info &info) {
+        std::cout << "call message." << std::endl;
+    }
+    ostream &print_symbol(const long long s) {
+        if (s < 0)
+            return std::cout << utils::type_name_map[s] << " ";
+        else
+            return std::cout << std::quoted(utils::type_name_map[s]) << " ";
+    }
+
+    void op(symbol_type &left, vector<symbol_type> &right, pass_info &info) {
+        char c = std::get<char>(right[1].object);
+        double l1 = std::get<double>(right[0].object), l2 = std::get<double>(right[2].object);
+        double &l = std::get<double>(left.object);
+        if (c == '+') l = l1 + l2;
+        else if (c == '-') l = l1 - l2;
+        else if (c == '*') l = l1 * l2;
+        else if (c == '/') l = l1 / l2;
+        cout << "Temp value of n: " << l << endl;
+    }
+}
+
+using std::string;
+
+string trim(string &s, const string &tar) {
+    string r;
+    size_t pos = 0, begin = 0;
+    for (;(pos = s.find(tar, begin)) != string::npos; begin = pos + tar.size())
+        r.append(s.begin() + begin, s.begin() + pos);
+    r.append(s.begin() + begin, s.end());
+    return r;
+}
+
+void run() {
+//    string ss("---1 + --2 * 3");
+//    sample::analyze(trim(ss, " "));
+//
+//    return;
+    cout << "Please input lines to tackle." << endl;
+    string s;
+    std::getline(cin, s);
+    while (s != "q" && s != "Q") {
+        s = trim(s, " ");
+        auto r = sample::analyze(s);
+        if (r.has_value) cout << "Result: " << r.r << endl;
+        else cout << "No input" << endl;
+        std::getline(cin, s);
+    }
+}

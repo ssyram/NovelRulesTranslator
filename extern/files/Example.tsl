@@ -1,0 +1,110 @@
+//
+//  Example.tsl
+//  NovelRulesTranslator
+//
+//  Created by 潇湘夜雨 on 2019/2/16.
+//  Copyright © 2019 ssyram. All rights reserved.
+//
+
+// this file is an example of a typical "tsl" file
+// in this example, you will see how to implement a simple calculator
+// that support the calculation in plus, minus, multiple, divide and brackets
+// of numbers with each 'char' as the token
+
+#ifndef Example_tsl_h
+#define Example_tsl_h
+
+// C++ code part
+#include <iostream>
+using std::cout;
+using std::cin;
+
+size_t get_type(const char c) {
+    if (c >= '0' && c <= '9') return 7;
+    switch (c) {
+        case '+':
+            return 0;
+        case '-':
+            return 1;
+        case '*':
+            return 2;
+        case '/':
+            return 3;
+        case '(':
+            return 4;
+        case ')':
+            return 5;
+        case '.':
+            return 6;
+            
+        default:
+            throw "Not a valid token";
+    }
+}
+
+struct expr {
+    double val;
+};
+
+unsigned int get_value(const char c) {
+    return c - '0';
+}
+
+double union_double(unsigned int i1, unsigned int i2) {
+    double r = i2;
+    for (; i2; i2 /= 10) r /= 10;
+    return r + i1;
+}
+
+namespace calculator {
+    ```tsl
+    terminate = {
+        '+', '-', '*', '/', '(', ')', '.', num, // the last ',' is allowed
+    };
+    token_type = char;
+    get_type = get_type;
+    
+    // using part
+    using e = expr;
+    using n = double;
+    using k = unsigned int;
+    
+    // here starts the block parts
+    // with back to print all the sequence of REDUCE
+    back = {
+        auto print_symbol = [](symbol_type &s) -> ostream& {
+            return cout << (s.type >= 0 ?
+                            std::quoted(utils::type_name_map[s.type], '\'') :
+                            utils::type_name_map[s.type]);
+        };
+        
+        print_symbol(left) << " := ";
+        for (symbol &s: right)
+            print_symbol(s) << " ";
+    };
+    
+    left rank {
+        properties = :noback /* nofront here is not acceptable, because front is not determined before */;
+        back = { // to show how to use this option
+            char c = utils::type_name_map[right[1].type][0];
+            cout << "type " << c << "REDUCE." << endl;
+        };
+        e := e {'+' | '-'} e, 0, { $$.val = $1.val + $3.val; };
+        
+        
+           | e '*' e, { $$.val = $1.val * $3.val; };
+           | e '/' e, 1, {
+               if ($3.val == 0) throw "must not divide by 0";
+               $$.val = $1.val / $3.val;
+           };
+    };
+    e := n, { $$.val = $1; };
+       | '(' e ')', { $$.val = $2.val; };
+    n := '-' n, right, { $$ = -$2; };
+       | k '.' k, { $$ = union_double($1, $3); };
+    k := k num, { $$ = $1 * 10 + get_value(num); };
+       | num, { $$ = get_value(num); };
+    ```
+}
+
+#endif /* Example_tsl_h */
