@@ -524,14 +524,14 @@ int run(int argc, const char *argv[]) {
                         raw_cmd.log_path ? log_path : cout);
     ::utils::PoolManager pool(raw_cmd.thread_amount ? *raw_cmd.thread_amount - 1 : 1, cmd.stop);
     FileInteractor fi(ss, tar, log, cmd);
-//    try {
+    try {
         auto info = parse(fi, cmd, log);
         generateTable(*info, fi, cmd, log, pool);
         generateAnalyzer(fi, cmd, log);
-//    } catch (const except::TranslateException &e) {
-//        cout << e.message << endl;
-//        return 1;
-//    }
+    } catch (const except::TranslateException &e) {
+        cout << e.message << endl;
+        return 1;
+    }
     
     return 0;
 }
