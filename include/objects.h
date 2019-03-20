@@ -90,7 +90,7 @@ namespace rules_translator {
             return doc + 1;
         }
         bool operator==(const ProductionWithDoc &pwd) const {
-            return doc == pwd.doc;
+            return doc == pwd.doc && p.pid == pwd.p.pid; // end() may be the same
         }
     };
     
