@@ -101,7 +101,7 @@ namespace runner {
             left.data.emplace_back(*it);
         return symbol_type{ left_type, std::move(left) };}
     symbol_type __process_4(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, (default_object_type{}) };
         std::visit(overloaded{[&info](token_type&$1, default_object_type&$$) {
             if (!info.tsl_file_path.empty()) {
                 if (info.target_file_path)
@@ -114,7 +114,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_5(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, (default_object_type{}) };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             if (info.target_file_path)
                 throw CommandParseException("Reset for target file path");
@@ -124,7 +124,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_6(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, (default_object_type{}) };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             check_reset(log_path)
             info.log_path = $2;
@@ -133,7 +133,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_7(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, (default_object_type{}) };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             if (info.thread_amount)
                 throw CommandParseException("Reset for thread_amount");
@@ -148,7 +148,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_8(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(no_parse_range_warn) info.no_parse_range_warn = true;
         }, [](auto &&) { assert(false); }
@@ -156,7 +156,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_9(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(restrict_nonformat_terminate) info.restrict_nonformat_terminate = true;
         }, [](auto &&) { assert(false); }
@@ -164,7 +164,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_10(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(ignore_duplicate_production) info.ignore_duplicate_production = true;
         }, [](auto &&) { assert(false); }
@@ -172,7 +172,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_11(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(ignore_anonym_for_cr) info.ignore_anonym_for_cr = true;
         }, [](auto &&) { assert(false); }
@@ -180,7 +180,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_12(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(property_list_for_auto_generate) info.property_list_for_auto_generate = true;
         }, [](auto &&) { assert(false); }
@@ -188,7 +188,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_13(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(ignore_batch_for_anonym) info.ignore_batch_for_anonym = true;
         }, [](auto &&) { assert(false); }
@@ -196,7 +196,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_14(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type){} };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](default_object_type&$$) {
             check_reset(show_all_collisions) info.show_all_collisions = true;
         }, [](auto &&) { assert(false); }
@@ -453,8 +453,9 @@ using std::ifstream;
 using std::stringstream;
 
 int run(int argc, const char *argv[]) {
-    if (argc == 1) { // print usage
+    if (argc <= 1) { // print usage
         print_usage();
+		return 0;
     }
     CommandParseObject raw_cmd;
     using namespace runner;

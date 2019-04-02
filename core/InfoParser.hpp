@@ -735,8 +735,8 @@ namespace rules_translator {
             return cpp_type_map_min_symbol;
         }
         
-        vector<const Production> get_productions_in_vec() {
-            vector<const Production> r;
+        vector<Production> get_productions_in_vec() {
+            vector<Production> r;
             
             ps.front().first.left = next_nonterminate;
             auto pit = ps.begin();

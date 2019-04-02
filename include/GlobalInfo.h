@@ -13,6 +13,7 @@
 #include <istream>
 #include <type_traits>
 #include <iostream>
+#include <assert.h>
 
 template <typename ttr>
 void generateException(const std::string &s, std::istream &is) {

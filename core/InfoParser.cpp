@@ -44,6 +44,12 @@ namespace rules_translator {
     const shared_ptr<string> raw_ac_production::RIGHT_AGAC(new string(RIGHT_COMBINE_AGACP));
     shared_ptr<string> DEFAULT_OBJECT_TYPE_PROCESS_NAME(new string("__default_object_type_semantic_process_"));
     
+	enum class fix_genre {
+		prefix,
+		postfix,
+		nothing
+	};
+
     void ConflictResolveSettingTable::generate_exception(size_t pid1, size_t pid2, rules_translator::conflict_type &type) {
         
         auto p = info.generate_sym_list();
@@ -242,7 +248,7 @@ namespace rules_translator {
             // create cpp_type_map
             {
                 const size_t SIZE = vs.size();
-                info.cpp_type_map_min_symbol = -SIZE;
+                info.cpp_type_map_min_symbol = -intptr_t(SIZE);
                 info.nontermiante_cpp_type_map = new pair<string, shared_ptr<string>>[SIZE];
                 for (size_t i = vs.size() - 1; i < SIZE; --i)
                     info.nontermiante_cpp_type_map[SIZE - i - 1] = make_pair(std::move(vs[i]), nullptr);
@@ -468,11 +474,7 @@ auto get_production_set = [&info, &infobuffer, &fi, &property_list_fill](const s
  *      end of the first set
  */
 auto read_right = [&info, &infobuffer, &fi](Production &p) -> size_t {
-enum class fix_genre {
-    prefix,
-    postfix,
-    nothing
-};
+
 fix_genre fix;
 auto read_token = [&infobuffer, &fix, &fi](bool normal/* Mark if it isn't an auto-combine production */) -> bool {
     fix = fix_genre::nothing;
@@ -883,9 +885,12 @@ do {
         
         
         // initialize left
-        fi.write(SYMBOL_TYPE).write(" left = ");
-        if (!init_by_core_call)
-            fi.writeln("{ left_type, (", left_type_name, "){} };");
+		if (!init_by_core_call) {
+			fi.writeln("using $Tp = ", left_type_name, ";");
+			fi.writeln(SYMBOL_TYPE, " left = $Tp{};");
+		}
+		else
+			fi.writeln(SYMBOL_TYPE, " left;");
         
         core_call();
         

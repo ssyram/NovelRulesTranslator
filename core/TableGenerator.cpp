@@ -260,7 +260,7 @@ pool.execute
 ([&info, &tsp1s, &nsem, &pp, &package, &ptrs, condition, &calculate_condition, &p_sem]()->void {
     if (pp.first.end()) { // reduce
         p_sem.signal(); // ok to access ptrs
-        ll to_set = -pp.first.p.pid;
+        ll to_set = -intptr_t(pp.first.p.pid);
         for (auto s: pp.second) {
             ll keep = 0;
             while (1) {

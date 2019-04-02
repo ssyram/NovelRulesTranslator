@@ -253,7 +253,7 @@ namespace rules_translator {
         const string * const type_map; // type_map[symbol];
         const string * const nttype_cppname_map; // nttype_cppname_map[symbol];
         const ConflictResolveCounselTable crtable;
-        const vector<const Production> ps;
+        const vector<Production> ps;
         ~ParseInfo() {
             const auto s = nttype_cppname_map + min_with_cpp; // "min_with_cpp" is minus
             delete []s;
