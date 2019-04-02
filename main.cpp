@@ -10,8 +10,5 @@
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    const char *list[] = { "1", "sample.tsl", "sample.hpp" };
-    argv = list;
-    argc = 3;
     return run(argc, argv);
 }
