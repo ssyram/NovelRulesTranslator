@@ -39,8 +39,8 @@ namespace std {
         size_t operator()(const ProductionWithDoc &pwd) const {
 			static constexpr size_t CLEAR = ~(~size_t(0) << (sizeof(size_t) - 6));
             return pwd.doc == pwd.p.right.end() ? 
-				(pwd.p.left << (sizeof(size_t) - 6)) : 
-				(size_t(&(*pwd.doc)) & CLEAR) | (pwd.p.left << (sizeof(size_t) - 6));
+				(pwd.p.pid << (sizeof(size_t) - 6)) : 
+				(size_t(&(*pwd.doc)) & CLEAR) | (pwd.p.pid << (sizeof(size_t) - 6));
         }
     };
 }
