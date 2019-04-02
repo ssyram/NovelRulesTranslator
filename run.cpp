@@ -101,7 +101,7 @@ namespace runner {
             left.data.emplace_back(*it);
         return symbol_type{ left_type, std::move(left) };}
     symbol_type __process_4(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type{}) };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](token_type&$1, default_object_type&$$) {
             if (!info.tsl_file_path.empty()) {
                 if (info.target_file_path)
@@ -114,7 +114,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_5(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type{}) };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             if (info.target_file_path)
                 throw CommandParseException("Reset for target file path");
@@ -124,7 +124,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_6(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type{}) };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             check_reset(log_path)
             info.log_path = $2;
@@ -133,7 +133,7 @@ namespace runner {
         return left;
     }
     symbol_type __process_7(const ll left_type, std::vector<symbol_type> &right, pass_info &info) {
-        symbol_type left = { left_type, (default_object_type{}) };
+        symbol_type left = { left_type, default_object_type{} };
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             if (info.thread_amount)
                 throw CommandParseException("Reset for thread_amount");
