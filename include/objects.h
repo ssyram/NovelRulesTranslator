@@ -60,10 +60,10 @@ namespace rules_translator {
     class ProductionWithDoc {
         ProductionWithDoc(const vector<symbol>::const_iterator &doc, const Production &p): doc(doc), p(p) { }
     public:
+        const Production &p;
         const vector<symbol>::const_iterator doc;
         ProductionWithDoc(const ProductionWithDoc&) = default;
         void operator=(const ProductionWithDoc&) = delete;
-        const Production &p;
         ProductionWithDoc(const Production &p): doc(p.right.begin()), p(p) { }
         ProductionWithDoc(ProductionWithDoc &&pwd): doc(pwd.doc), p(pwd.p) { }
         vector<symbol>::const_iterator end_doc() const {
@@ -90,7 +90,8 @@ namespace rules_translator {
             return doc + 1;
         }
         bool operator==(const ProductionWithDoc &pwd) const {
-            return doc == pwd.doc && p.pid == pwd.p.pid; // end() may be the same
+            return &p == &pwd.p &&
+				doc == pwd.doc && p.pid == pwd.p.pid; // end() may be the same
         }
     };
     

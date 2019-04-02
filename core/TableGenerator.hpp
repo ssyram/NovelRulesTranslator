@@ -37,7 +37,10 @@ namespace std {
     template <>
     struct hash<ProductionWithDoc> {
         size_t operator()(const ProductionWithDoc &pwd) const {
-            return size_t(&(*pwd.doc));
+			static constexpr size_t CLEAR = ~(~size_t(0) << (sizeof(size_t) - 6));
+            return pwd.doc == pwd.p.right.end() ? 
+				(pwd.p.left << (sizeof(size_t) - 6)) : 
+				(size_t(&(*pwd.doc)) & CLEAR) | (pwd.p.left << (sizeof(size_t) - 6));
         }
     };
 }
@@ -260,7 +263,7 @@ return rep##func_name{logger};\
                 n ^= (m | (m - 1));
                 c += n >> (2 * range);
                 if (c & upper_bound) c = c ^ m >> (2 * range);
-                k += size_t(&(*p.first.doc)) >> 24;
+                k += p.first.end() ? 0 : size_t(&(*p.first.doc)) >> 24;
                 b = b ^ k + k;
             }
             // here, acquire the lock, and automatically release it when leave
