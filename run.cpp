@@ -18,6 +18,8 @@ using std::optional;
 using std::unordered_map;
 using std::string;
 
+std::ostringstream utils::Logger::NULL_OS;
+
 unordered_map<string, size_t> t_map = {
     { "-no_parse_range_warn", 2 },
     { "-restrict_nonformat_terminate", 3 },
@@ -441,7 +443,8 @@ void print_usage() {
     ("-ignore_anonym_for_cr")
     ("-property_list_for_auto_generate")
     ("-ignore_batch_for_anonym")
-    ("-show_all_collisions");
+    ("-show_all_collisions")
+    ("-l <place to log, \"console\" for console, otherwise the name will specify a file>");
 }
 
 #include <fstream>
@@ -513,16 +516,21 @@ int run(int argc, const char *argv[]) {
         logger("Cannot open target file.");
         return 4;
     }
-    ofstream log_path(raw_cmd.log_path ?
-                      *raw_cmd.log_path :
-                      "");
-    if (raw_cmd.log_path && !log_path.is_open()) {
-        logger("Cannot open log file.");
-        return 5;
-    }
-    ::utils::Logger log(raw_cmd.log_path ? log_path : cout,
-                        raw_cmd.log_path ? log_path : cout,
-                        raw_cmd.log_path ? log_path : cout);
+    auto get_log = [&raw_cmd]() -> std::optional<::utils::Logger> {
+        if (!raw_cmd.log_path)
+            return ::utils::Logger(::utils::Logger::NULL_OS, ::utils::Logger::NULL_OS, ::utils::Logger::NULL_OS);
+        if (raw_cmd.log_path == "console")
+            return ::utils::Logger(cout, cout, cout);
+        ofstream log_path(*raw_cmd.log_path);
+        if (raw_cmd.log_path && !log_path.is_open()) {
+            logger("Cannot open log file.");
+            return nullopt;
+        }
+        return ::utils::Logger(log_path, log_path, log_path);
+    };
+    auto raw_log = get_log();
+    if (!raw_log) return 5;
+    auto log = *raw_log;
     ::utils::PoolManager pool(raw_cmd.thread_amount ? *raw_cmd.thread_amount - 1 : 1, cmd.stop);
     FileInteractor fi(ss, tar, log, cmd);
     try {
@@ -531,8 +539,11 @@ int run(int argc, const char *argv[]) {
         generateAnalyzer(fi, cmd, log);
     } catch (const except::TranslateException &e) {
         cout << e.message << endl;
+        log.err(e.message);
         return 1;
     }
+    
+    log.log("Done!");
     
     return 0;
 }

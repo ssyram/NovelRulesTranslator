@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <string_view>
+#include <sstream>
 #include <unordered_set>
 
 namespace utils {
@@ -26,17 +27,25 @@ namespace utils {
     class Logger {
         ostream &normal, &error, &warning;
     public:
-        Logger(ostream &normal, ostream &error, ostream &warning): normal(normal), warning(warning), error(error) { }
+        static std::ostringstream NULL_OS;
+        Logger(ostream &normal, ostream &error, ostream &warning):
+            normal(normal), warning(warning), error(error),
+            permit_normal(&normal != &NULL_OS), permit_error(&error != &NULL_OS),
+            permit_warning(&warning != &NULL_OS)
+        { }
         unordered_set<string> interrupt_strings;
         
 #define func_set(type_name, __where)\
+        bool permit_##__where = true;\
         template <typename ...Args>\
         Logger &type_name(Args &&...msgs) {\
+            if (!permit_##__where) return *this;\
             (__where << ... << msgs);\
             return *this;\
         }\
         template <typename ...Args>\
         Logger &type_name##ln(Args &&...msgs) {\
+            if (!permit_##__where) return *this;\
             (__where << ... << msgs) << endl;\
             return *this;\
         }
