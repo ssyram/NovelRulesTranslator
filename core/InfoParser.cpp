@@ -887,7 +887,7 @@ do {
         // initialize left
 		if (!init_by_core_call) {
 			fi.writeln("using $Tp = ", left_type_name, ";");
-			fi.writeln(SYMBOL_TYPE, " left = $Tp{};");
+			fi.writeln(SYMBOL_TYPE, " left{ left_type, $Tp{} };");
 		}
 		else
 			fi.writeln(SYMBOL_TYPE, " left;");
