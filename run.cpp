@@ -30,7 +30,7 @@ unordered_map<string, size_t> t_map = {
     { "-show_all_collisions", 8 },
     { "-o", 9 },
     { "-l", 10 },
-    { "thread", 11 }
+    { "-thread", 11 }
 };
 
 struct CommandParseObject {
