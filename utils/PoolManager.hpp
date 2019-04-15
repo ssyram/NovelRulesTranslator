@@ -10,6 +10,8 @@
 #define PoolManager_hpp
 
 #include <functional>
+#include <optional>
+#include "../except/TranslateException.h"
 
 namespace utils {
     
@@ -24,6 +26,7 @@ namespace utils {
         PoolManager(size_t pool_size, bool &stop_signal);
         ~PoolManager();
         void execute(std::function<void()> to_run);
+		std::optional<except::TranslateException> get_only_except();
         bool has_empty(); // check if there is empty thread
     };
     

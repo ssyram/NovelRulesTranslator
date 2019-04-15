@@ -139,12 +139,13 @@ namespace runner {
         std::visit(overloaded{[&info](token_type&$2, default_object_type&$$) {
             if (info.thread_amount)
                 throw CommandParseException("Reset for thread_amount");
-            auto &ts = *info.thread_amount;
-            ts = 0;
+            
+            size_t ts = 0;
             for (auto c: $2)
                 ts = ts * 10 + c - '0';
             if (!ts || ts > 100)
                 throw CommandParseException("Not a valid thread amount specification");
+			info.thread_amount = ts;
         }, [](auto &&, auto &&) { assert(false); }
         }, right[1].object, left.object);
         return left;
@@ -516,12 +517,13 @@ int run(int argc, const char *argv[]) {
         logger("Cannot open target file.");
         return 4;
     }
-    auto get_log = [&raw_cmd]() -> std::optional<::utils::Logger> {
+	ofstream log_path;
+    auto get_log = [&raw_cmd, &log_path]() -> std::optional<::utils::Logger> {
         if (!raw_cmd.log_path)
             return ::utils::Logger(::utils::Logger::NULL_OS, ::utils::Logger::NULL_OS, ::utils::Logger::NULL_OS);
         if (raw_cmd.log_path == "console")
             return ::utils::Logger(cout, cout, cout);
-        ofstream log_path(*raw_cmd.log_path);
+        log_path.open(*raw_cmd.log_path);
         if (raw_cmd.log_path && !log_path.is_open()) {
             logger("Cannot open log file.");
             return nullopt;
@@ -537,11 +539,17 @@ int run(int argc, const char *argv[]) {
         auto info = parse(fi, cmd, log);
         generateTable(*info, fi, cmd, log, pool);
         generateAnalyzer(fi, cmd, log);
+		if (pool.get_only_except())
+			throw *pool.get_only_except();
     } catch (const except::TranslateException &e) {
         cout << e.message << endl;
         log.err(e.message);
         return 1;
     }
+	catch (const except::StopMark &sm) {
+		cout << "Collisions Occured." << endl;
+		return 1;
+	}
     
     log.log("Done!");
     

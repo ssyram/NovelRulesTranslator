@@ -33,6 +33,8 @@ namespace utils {
         semaphore *ret_list; // to wait for all of them to come back
         bool *stop_list;
         bool &stop_signal;
+
+		std::optional<except::TranslateException> except;
         
         static void
         thread_function(
@@ -43,12 +45,19 @@ namespace utils {
                         bool &stop_signal,                      // the signal to stop all
                         mutex &el_mtx,                          // the mutex for empty_list
                         forward_list<uint64_t> &empty_list,     // the list to put this
+						std::optional<except::TranslateException> &except,
                         size_t id
                         )
         {
             smphr.wait();
             while (!to_stop) {
-                to_run();
+				try {
+					to_run();
+				}
+				catch (const except::TranslateException &e) {
+					except = e;
+					stop_signal = true;
+				}
                 
                 el_mtx.lock();
                 empty_list.push_front(id);
@@ -76,23 +85,26 @@ namespace utils {
                           ref(this->stop_signal),
                           ref(el_mtx),
                           ref(empty_list),
+						  ref(except),
                           i + 1);
                 tr.detach();
             }
         }
         ~impl_pool_manager() {
-            for (size_t i = 0; i < size; ++i) {
-                stop_list[i] = true;
-                smphr_list[i].signal();
-            }
-            for (size_t i = 0; i < size; ++i)
-                ret_list[i].wait();
-            
+			for (size_t i = 0; i < size; ++i) {
+				stop_list[i] = true;
+				smphr_list[i].signal();
+			}
+			for (size_t i = 0; i < size; ++i)
+				ret_list[i].wait();
             
             delete [] to_run_list;
             delete [] smphr_list;
             delete [] stop_list;
         }
+		std::optional<except::TranslateException> get_only_except() {
+			return except;
+		}
         void execute(function<void ()> to_run) {
             el_mtx.lock();
             if (empty_list.empty()) {
@@ -115,7 +127,6 @@ namespace utils {
     
     
     
-    
     bool PoolManager::has_empty() {
         return impl->has_empty();
     }
@@ -123,6 +134,11 @@ namespace utils {
     void PoolManager::execute(std::function<void ()> to_run) {
         impl->execute(to_run);
     }
+
+	std::optional<except::TranslateException> PoolManager::get_only_except()
+	{
+		return impl->get_only_except();
+	}
     
     PoolManager::PoolManager(size_t pool_size, bool &stop_signal) {
         impl = new impl_pool_manager(pool_size, stop_signal);

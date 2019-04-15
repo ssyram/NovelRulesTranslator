@@ -136,7 +136,7 @@ return rep##func_name{logger};\
         
         // to calculate the priority
         // return if p1s win
-        bool tackle_sr_conflict(set<size_t> p1s, size_t p2) {
+        bool tackle_sr_conflict(set<size_t> p1s, size_t p2, semaphore &smr) {
             optional<bool> win_type;
             size_t temp = 0;
             // find solution
@@ -157,7 +157,7 @@ return rep##func_name{logger};\
                     print_production(pi.ps[temp], logr);
                     print_production(pi.ps[p2], logr);
                     print_production(pi.ps[p1], logr);
-                    collision_tackle_func();
+                    collision_tackle_func(smr);
                     return false;
                 }
             }
@@ -167,17 +167,18 @@ return rep##func_name{logger};\
                 print_production(pi.ps[p2], logr);
                 for (auto p1: p1s)
                     print_production(pi.ps[p1], logr);
-                collision_tackle_func();
+                collision_tackle_func(smr);
                 return false;
             }
             if (!*win_type) return false; // means nothing to do, because the original value has higher priority
             return true;
         };
         
-        void collision_tackle_func() {
+        void collision_tackle_func(semaphore &smr) {
             if (cmd.show_all_collisions) err = true;
             else {
                 cmd.stop = true;
+				smr.signal();
                 throw except::ConflictResolveCollisionTranslateException();
             }
         }

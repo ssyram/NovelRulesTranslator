@@ -222,7 +222,7 @@ calculate_condition = [&info, &pi, &pool, &logger, &calculate_condition
             logger.logln("Try to set it to: SHIFT to <", condition, ">");
 #endif
             
-            if (info.tackle_sr_conflict(p1s, -ov)) {
+            if (info.tackle_sr_conflict(p1s, -ov, sem)) {
 #ifdef TEST_TABLEGEN
                 logger.logln("Set SHIFT fail in: from condition <", previous_condition, "> to condition <",
                            condition, ">.");
@@ -307,7 +307,7 @@ pool.execute
                         logr("No Conflict Resolving option has been set:\n");
                         info.print_production(info.pi.ps[-to_set], info.log_funcerr());
                         info.print_production(info.pi.ps[-keep], info.log_funcerr());
-                        info.collision_tackle_func();
+                        info.collision_tackle_func(nsem);
                         break;
                     }
                     if (!*win_type) break;
@@ -315,7 +315,7 @@ pool.execute
                 else { // shift-reduce conflict resoving
                     
                     // tsp1s must already be set
-                    if (!info.tackle_sr_conflict(tsp1s[s], -to_set)) break;
+                    if (!info.tackle_sr_conflict(tsp1s[s], -to_set, nsem)) break;
                     
                 } // end shift-reduce conflict resoving
             }

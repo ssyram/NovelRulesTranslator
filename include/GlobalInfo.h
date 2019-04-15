@@ -9,6 +9,8 @@
 #ifndef GlobalInfo_h
 #define GlobalInfo_h
 
+#define TEST_TABLEGEN
+
 #include <string>
 #include <istream>
 #include <type_traits>
