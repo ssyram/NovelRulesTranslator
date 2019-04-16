@@ -10,6 +10,7 @@
 #define GlobalInfo_h
 
 #define TEST_TABLEGEN
+#define TEST
 
 #include <string>
 #include <istream>

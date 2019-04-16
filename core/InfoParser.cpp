@@ -368,18 +368,24 @@ namespace rules_translator {
                 if (infobuffer.type == fi_type::nothing) goto ret;
                 
                 if (infobuffer.type == fi_type::identifier) {
-                    visit([&fi, &info, &pl](auto &&t) {
+                    visit([&fi, &info, &pl, &infobuffer](auto &&t) {
                         using T = std::decay_t<decltype(t)>;
 #define con(type) if constexpr (std::is_same_v<T, std::decay_t<named_types::type>>)
                         con(combination) {
                             pl.csets.insert(t.ptr);
                         }
                         else con(rank) {
-                            pl.rvec_info.emplace(t.ptr, t.ptr->get_next_rank());
+							infobuffer = fi.read_info(object::get_integer, not_require);
+							if (infobuffer.type != fi_type::nothing)
+								pl.rvec_info.emplace(t.ptr, utils::string2ll(infobuffer.content));
+                            else pl.rvec_info.emplace(t.ptr, t.ptr->get_next_rank());
                         }
                         else con(mix_property) {
                             pl.csets.insert(t.cptr);
-                            pl.rvec_info.emplace(t.rptr, t.rptr->get_next_rank());
+							infobuffer = fi.read_info(object::get_integer, not_require);
+							if (infobuffer.type != fi_type::nothing)
+								pl.rvec_info.emplace(t.rptr, utils::string2ll(infobuffer.content));
+							else pl.rvec_info.emplace(t.rptr, t.rptr->get_next_rank());
                         }
                         else
                             generateException

@@ -10,8 +10,5 @@
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-	argc = 4;
-	const char *a[] = { "1", "productions.tsl", "-l", "production_debug.log" };
-	argv = a;
     return run(argc, argv);
 }
