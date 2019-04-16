@@ -520,6 +520,7 @@ namespace rules_translator {
     
     
     
+	// the class that is the container that holds all infomation that should be used in InfoParser
     struct pass_info {
         FileInteractor &fi;
         CommandObject &cmd;
@@ -540,6 +541,10 @@ namespace rules_translator {
         ConflictResolveSettingTable crtable;
         
         ~pass_info() {
+			// at least when some error happens
+			// make all properties clean before crtable is destroyed.
+			// if not do so, the crtable may destroy before name_type_map, that should certainly cause bug
+			clean_property();
         }
         
     private:
@@ -563,6 +568,7 @@ namespace rules_translator {
             }
         }
     public:
+		// clear name_type_map and let all conflict specifications get to the table
         void clean_property() {
             for (auto it = name_type_map.begin(); it != name_type_map.end(); )
                 if (it->second.index() >= 3)
