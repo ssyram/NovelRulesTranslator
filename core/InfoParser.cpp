@@ -1025,36 +1025,69 @@ do {
             
             // call semantic process in "buffer"
             output_production_semantic_process([&info, &buffer, &fi, &to_put, left, MAX, &normal_fill]() {
-                fi.write("std::visit(overloaded{[&info](");
+                fi.write("auto run = [](");
                 auto &right = info.ps.back().first.right;
                 for (auto idx: to_put) {
                     auto k = right[idx];
-                    if (k >= 0) {
-                        fi.write(TOKEN_TYPE);
-                    }
-                    else { // nonterminate symbol
-                        if (k < info.cpp_type_map_min_symbol)
-                            fi.write(DEFAULT_OBJECT_TYPE);
-                        else
-                            fi.write(info.nontermiante_cpp_type_map[k].first);
-                    }
+#define print_sym_type \
+if (k >= 0) fi.write(TOKEN_TYPE);\
+else if (k < info.cpp_type_map_min_symbol) fi.write(DEFAULT_OBJECT_TYPE);\
+else fi.write(info.nontermiante_cpp_type_map[k].first);
+                    
+                    print_sym_type
+                    
                     fi.write("&$", idx + 1, ", ");
                 }
-                {
-                    if (left < info.cpp_type_map_min_symbol)
-                        fi.write(DEFAULT_OBJECT_TYPE);
-                    else
-                        fi.write(info.nontermiante_cpp_type_map[left].first);
-                }
+                if (left < info.cpp_type_map_min_symbol) fi.write(DEFAULT_OBJECT_TYPE);
+                else fi.write(info.nontermiante_cpp_type_map[left].first);
                 fi.writeln("&$$) {");
                 fi.writeln(buffer);
-                fi.write("}, [](");
-                for (size_t i = 0; i < to_put.size(); ++i)
-                    fi.write("auto &&, ");
-                fi.writeln("auto &&) { assert(false); }").write("}, ");
-                for (auto idx: to_put)
-                    fi.write("right[", idx, "].object, ");
-                fi.writeln("left.object);");
+                fi.writeln("};");
+                fi.write("run(");
+                for (auto idx: to_put) {
+                    fi.write("std::get<");
+                    auto k = right[idx];
+                    
+                    print_sym_type
+                    
+                    fi.write(">(right[", idx, "].object), ");
+                }
+                fi.write("std::get<");
+                if (left < info.cpp_type_map_min_symbol) fi.write(DEFAULT_OBJECT_TYPE);
+                else fi.write(info.nontermiante_cpp_type_map[left].first);
+                fi.writeln(">(left.object));");
+#undef print_sym_type
+                // This implementation may cause low compile efficiency.
+//                fi.write("std::visit(overloaded{[&info](");
+//                auto &right = info.ps.back().first.right;
+//                for (auto idx: to_put) {
+//                    auto k = right[idx];
+//                    if (k >= 0) {
+//                        fi.write(TOKEN_TYPE);
+//                    }
+//                    else { // nonterminate symbol
+//                        if (k < info.cpp_type_map_min_symbol)
+//                            fi.write(DEFAULT_OBJECT_TYPE);
+//                        else
+//                            fi.write(info.nontermiante_cpp_type_map[k].first);
+//                    }
+//                    fi.write("&$", idx + 1, ", ");
+//                }
+//                {
+//                    if (left < info.cpp_type_map_min_symbol)
+//                        fi.write(DEFAULT_OBJECT_TYPE);
+//                    else
+//                        fi.write(info.nontermiante_cpp_type_map[left].first);
+//                }
+//                fi.writeln("&$$) {");
+//                fi.writeln(buffer);
+//                fi.write("}, [](");
+//                for (size_t i = 0; i < to_put.size(); ++i)
+//                    fi.write("auto &&, ");
+//                fi.writeln("auto &&) { assert(false); }").write("}, ");
+//                for (auto idx: to_put)
+//                    fi.write("right[", idx, "].object, ");
+//                fi.writeln("left.object);");
             }, fid, name_for_left, false);
             
             normal_fill();
