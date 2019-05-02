@@ -877,6 +877,7 @@ do {
      *      core_call: the content to be printed
      *      fid: to determine the name of this function, name: "__process_<fid>"
      *      left_type_name: the name of the type of left
+     ****** init_by_core_call: left will be initialized by core call, which means to fill content after "symbol_type left = "
      */
     auto output_production_semantic_process =
     [&info, &fi, &pl](std::function<void ()> core_call,
@@ -892,11 +893,15 @@ do {
         
         // initialize left
 		if (!init_by_core_call) {
+            // because Clang and VC supports different kinds of not-single-symbol initialization form
+            // Clang: left{left_type, (unsigned long long){} };
+            // VC: left{left_type, unsigned long long{} };
+            // the opposite form will cause error in the opposite side.
 			fi.writeln("using $Tp = ", left_type_name, ";");
 			fi.writeln(SYMBOL_TYPE, " left{ left_type, $Tp{} };");
 		}
 		else
-			fi.writeln(SYMBOL_TYPE, " left;");
+            fi.write(SYMBOL_TYPE, " left = ");
         
         core_call();
         
