@@ -1110,7 +1110,12 @@ else fi.write(info.nontermiante_cpp_type_map[k].first);
                 generate_empty_semantic_process();
             else {
                 output_production_semantic_process
-                    ([&fi, &buffer]() { fi.writeln(buffer); }, fid, name_for_left, false);
+                    ([&fi, &buffer]() {
+                        fi.writeln("auto run = [&left, &right, &info]() {");
+                        fi.writeln(buffer);
+                        fi.writeln("};");
+                        fi.writeln("run();");
+                    }, fid, name_for_left, false);
                 fi.expect(expect(";"), not_require);
                 normal_fill();
             }
