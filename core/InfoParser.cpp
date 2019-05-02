@@ -1030,7 +1030,7 @@ do {
             
             // call semantic process in "buffer"
             output_production_semantic_process([&info, &buffer, &fi, &to_put, left, MAX, &normal_fill]() {
-                fi.write("auto run = [](");
+                fi.write("auto run = [&info](");
                 auto &right = info.ps.back().first.right;
                 for (auto idx: to_put) {
                     auto k = right[idx];
