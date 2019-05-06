@@ -85,19 +85,19 @@ namespace rules_translator::table_generator {
         bool err = false;
 #define log_generator(func_name) \
 struct rep##func_name {\
-Logger &logger;\
-template <typename ...Args>\
-rep##func_name &operator()(Args &&...msgs) {\
-logger.func_name(std::forward<Args>(msgs) ...);\
-return *this;\
-}\
-template <typename ...Args>\
-void end(Args &&...msgs) {\
-logger.func_name##ln(std::forward<Args>(msgs) ...);\
-}\
+    Logger &logger;\
+    template <typename ...Args>\
+    rep##func_name &operator()(Args &&...msgs) {\
+        logger.func_name(std::forward<Args>(msgs) ...);\
+        return *this;\
+    }\
+    template <typename ...Args>\
+    void end(Args &&...msgs) {\
+        logger.func_name##ln(std::forward<Args>(msgs) ...);\
+    }\
 };\
 rep##func_name log_func##func_name() {\
-return rep##func_name{logger};\
+    return rep##func_name{logger};\
 }
         log_generator(log)
         log_generator(err)

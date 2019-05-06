@@ -935,6 +935,7 @@ do {
      */
     auto generate_empty_semantic_process =
     [&info, &pl, &output_production_semantic_process, fid, &name_for_left, &front_it, bid, &fi]() {
+        // take out the latest block
         block_info &binfo = *info.block_stack.back();
         shared_ptr<string> r;
         if ((!pl.nofront && binfo.withfront) || (!pl.noback && binfo.withback)) {
