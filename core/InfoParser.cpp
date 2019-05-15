@@ -1302,6 +1302,7 @@ ret:
                 fi.writeln("}");
             }
             else {
+				binfo.withback = true;
                 fi.write(string("void ") += binfo.get_name() += BACK_TYPE_PARA_LIST).writeln(" {");
                 fi.writeln(binfo.previous->get_name() += BACK_CALL);
                 fi.writeln("}");
