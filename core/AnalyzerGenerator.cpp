@@ -94,7 +94,7 @@ namespace rules_translator {
         "#ifdef TEST\n"
         "                  ostream &os = cout,\n"
         "#endif\n"
-        "                  InitArgs ...args) {\n"
+        "                  InitArgs &&...args) {\n"
         "    pass_info r(std::forward<InitArgs>(args)...);\n"
         "    SyntacticAnalyzer analyzer(\n"
         "#ifdef TEST\n"

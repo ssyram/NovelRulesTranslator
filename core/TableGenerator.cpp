@@ -248,7 +248,7 @@ calculate_condition = [&info, &pi, &pool, &logger, &calculate_condition
     
     p_sem.signal(); // to ensure the first time to access ptrs
     // to tackle condition
-    for (auto &pp: package) {
+    for (auto &pp: package) {  // start dispatch
         p_sem.wait(); // wait for OK to access ptrs
         if (!ptrs.insert(pp.first).second) {
             p_sem.signal(); // OK for next time to visit
@@ -338,7 +338,7 @@ pool.execute
     if (info.cmd.stop) return;
     calculate_condition(std::move(next_package), condition, next_path_symbol, nsem, next_p1s);
 });
-    }
+    }  // end dispatch
     
     
     
