@@ -161,6 +161,7 @@ namespace rules_translator {
                 tar.write(buffer, ori.gcount());
             }
             closed = true;
+            delete [] buffer;
             clo_ori();
             clo_tar();
         }
